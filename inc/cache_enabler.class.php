@@ -1419,7 +1419,7 @@ final class Cache_Enabler {
     public static function clear_user_cache( $user = null ) {
 
         if ( empty( $user ) ) {
-            $user = get_current_user_id(); // TODO: maybe use wp_get_current_user() instead
+            $user = wp_get_current_user();
         }
 
         if ( is_numeric( $user ) ) {
@@ -1677,7 +1677,7 @@ final class Cache_Enabler {
     public static function clear_author_archive_cache( $author = null ) {
 
         if ( empty( $author ) ) {
-            $author = get_current_user_id();
+            $author = wp_get_current_user();
         }
 
         if ( is_numeric( $author ) ) {
