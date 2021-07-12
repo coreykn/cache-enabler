@@ -1343,13 +1343,22 @@ final class Cache_Enabler {
 
         if ( $post instanceof WP_Post ) {
             self::clear_page_cache_by_post_id( $post->ID );
-            self::clear_cache_associated_with_post( $post );
+            self::clear_post_pagination_cache( $post );
+            self::clear_post_type_archive_cache( $post );
+            self::clear_post_terms_archives_cache( $post );
+
+            if ( $post->post_type === 'post' ) {
+                self::clear_post_author_archive_cache( $post );
+                self::clear_post_date_archives_cache( $post );
+            }
+
+            // TODO: maybe fire hook here to allow easy extension
         }
     }
 
 
     /**
-     * clear the page and associated cache for the current comment (if it is set) or of a given comment
+     * clear the page cache for the current comment (if it is set) or of a given comment
      *
      * @since   1.8.0
      * @change  1.8.0
@@ -1363,7 +1372,9 @@ final class Cache_Enabler {
 
         if ( $comment instanceof WP_Comment ) {
             self::clear_page_cache_by_post_id( (int) $comment->comment_post_ID );
-            self::clear_cache_associated_with_comment( $comment );
+            self::clear_post_pagination_cache( (int) $comment->comment_post_ID );
+
+            // TODO: maybe fire hook here to allow easy extension
         }
     }
 
@@ -1380,8 +1391,19 @@ final class Cache_Enabler {
 
     public static function clear_term_cache( $term, $taxonomy = '' ) {
 
-        self::clear_term_archive_cache( $term, $taxonomy );
-        self::clear_cache_associated_with_term( $term, $taxonomy );
+        $term = get_term( $term, $taxonomy );
+
+        if ( $term instanceof WP_Term ) {
+            self::clear_term_archive_cache( $term );
+            self::clear_page_cache_by_term( $term ); // clear all pages that have the term set
+
+            if ( is_taxonomy_hierarchical( $term->taxonomy ) ) {
+                self::clear_term_children_archives_cache( $term );
+                self::clear_term_parents_archives_cache( $term );
+            }
+
+            // TODO: maybe fire hook here to allow easy extension
+        }
     }
 
 
@@ -1397,127 +1419,7 @@ final class Cache_Enabler {
     public static function clear_user_cache( $user = null ) {
 
         if ( empty( $user ) ) {
-            $user = wp_get_current_user();
-        }
-
-        self::clear_author_archive_cache( $user ); // TODO: maybe move this
-        self::clear_cache_associated_with_user( $user );
-    }
-
-
-    /**
-     * clear the cache associated with a given post, comment, term, or user
-     *
-     * @since   1.5.0
-     * @change  1.8.0
-     *
-     * @param   WP_Post|WP_Comment|WP_Term|WP_User  $obj  post, comment, term, or user instance
-     */
-
-    public static function clear_associated_cache( $obj ) {
-
-        if ( $obj instanceof WP_Post ) {
-            self::clear_cache_associated_with_post( $obj );
-        } elseif ( $obj instanceof WP_Comment ) {
-            self::clear_cache_associated_with_comment( $obj );
-        } elseif ( $obj instanceof WP_Term ) {
-            self::clear_cache_associated_with_term( $obj );
-        } elseif ( $obj instanceof WP_User ) {
-            self::clear_cache_associated_with_user( $obj );
-        }
-    }
-
-
-    /**
-     * clear the cache associated with the current post (if it is set) or of a given post
-     *
-     * @since   1.8.0
-     * @change  1.8.0
-     *
-     * @param   WP_Post|int  $post  (optional) post instance or post ID, maybe defaults to current post if empty
-     */
-
-    public static function clear_cache_associated_with_post( $post = null ) {
-
-        $post = get_post( $post );
-
-        if ( $post instanceof WP_Post ) {
-            self::clear_post_type_archive_cache( $post );
-            self::clear_post_terms_archives_cache( $post );
-
-            if ( $post->post_type === 'post' ) {
-                self::clear_post_author_archive_cache( $post );
-                self::clear_post_date_archives_cache( $post );
-            }
-
-            self::clear_post_pagination_cache( $post );
-
-            // TODO: maybe fire hook here to allow easy extension
-        }
-    }
-
-
-    /**
-     * clear the cache associated with the current comment (if it is set) or of a given comment
-     *
-     * @since   1.8.0
-     * @change  1.8.0
-     *
-     * @param   WP_Comment|int|string  $comment  (optional) comment instance or comment ID, maybe defaults to current comment if empty
-     */
-
-    public static function clear_cache_associated_with_comment( $comment = null ) {
-
-        $comment = get_comment( $comment );
-
-        if ( $comment instanceof WP_Comment ) {
-            self::clear_post_pagination_cache( (int) $comment->comment_post_ID );
-
-            // TODO: maybe fire hook here to allow easy extension
-        }
-    }
-
-
-    /**
-     * clear the cache associated with a given term
-     *
-     * @since   1.8.0
-     * @change  1.8.0
-     *
-     * @param   WP_Term|int  $term      term instance or term ID
-     * @param   string       $taxonomy  (optional) taxonomy name that $term is part of
-     */
-
-    public static function clear_cache_associated_with_term( $term, $taxonomy = '' ) {
-
-        $term = get_term( $term, $taxonomy );
-
-        if ( $term instanceof WP_Term ) {
-            if ( is_taxonomy_hierarchical( $term->taxonomy ) ) {
-                self::clear_term_children_archives_cache( $term );
-                self::clear_term_parents_archives_cache( $term );
-            }
-
-            self::clear_page_cache_by_term( $term );
-
-            // TODO: maybe fire hook here to allow easy extension
-        }
-    }
-
-
-    /**
-     * clear the cache associated with the current user (if logged in) or of a given user
-     *
-     * @since   1.8.0
-     * @change  1.8.0
-     *
-     * @param   WP_User|int|string  $user  user instance or user ID, maybe defaults to current user if empty
-     */
-
-    public static function clear_cache_associated_with_user( $user = null ) {
-
-        if ( empty( $user ) ) {
-            $user = get_current_user_id();
+            $user = get_current_user_id(); // TODO: maybe use wp_get_current_user() instead
         }
 
         if ( is_numeric( $user ) ) {
@@ -1525,10 +1427,29 @@ final class Cache_Enabler {
         }
 
         if ( $user instanceof WP_User ) {
-            // clear all pages that have the user is the author or has commented on
-            self::clear_page_cache_by_user( $user );
+            self::clear_author_archive_cache( $user );
+            self::clear_page_cache_by_user( $user ); // clear all pages that the user is the author of or has commented on
 
             // TODO: maybe fire hook here to allow easy extension
+        }
+    }
+
+
+    /**
+     * clear the cache associated with a given post (deprecated)
+     *
+     * @since       1.5.0
+     * @deprecated  1.8.0
+     */
+
+    public static function clear_associated_cache( $post ) {
+
+        self::clear_post_type_archive_cache( $post );
+        self::clear_post_terms_archives_cache( $post );
+
+        if ( $post->post_type === 'post' ) {
+            self::clear_post_author_archive_cache( $post );
+            self::clear_post_date_archives_cache( $post );
         }
     }
 
@@ -1558,7 +1479,7 @@ final class Cache_Enabler {
      * @since   1.8.0
      * @change  1.8.0
      *
-     * @param   WP_Post|int|string  $post  post instance or post ID, maybe defaults to current post if empty
+     * @param   WP_Post|int|string  $post  (optional) post instance or post ID, maybe defaults to current post if empty
      */
 
     public static function clear_post_type_archive_cache( $post = null ) {
@@ -1583,10 +1504,10 @@ final class Cache_Enabler {
      * @since   1.8.0
      * @change  1.8.0
      *
-     * @param   WP_Post|int|string  $post  post instance or post ID, maybe defaults to current post if empty
+     * @param   WP_Post|int|string  $post  (optional) post instance or post ID, maybe defaults to current post if empty
      */
 
-    public static function clear_post_terms_archives_cache( $post ) {
+    public static function clear_post_terms_archives_cache( $post = null ) {
 
         $post = get_post( $post );
 
@@ -1612,10 +1533,10 @@ final class Cache_Enabler {
      * @since   1.8.0
      * @change  1.8.0
      *
-     * @param   WP_Post|int|string  $post  post instance or post ID, maybe defaults to current post if empty
+     * @param   WP_Post|int|string  $post  (optional) post instance or post ID, maybe defaults to current post if empty
      */
 
-    public static function clear_post_author_archive_cache( $post ) {
+    public static function clear_post_author_archive_cache( $post = null ) {
 
         $post = get_post( $post );
 
@@ -1631,10 +1552,10 @@ final class Cache_Enabler {
      * @since   1.8.0
      * @change  1.8.0
      *
-     * @param   WP_Post|int|string  $post  post instance or post ID, maybe defaults to current post if empty
+     * @param   WP_Post|int|string  $post  (optional) post instance or post ID, maybe defaults to current post if empty
      */
 
-    public static function clear_post_date_archives_cache( $post ) {
+    public static function clear_post_date_archives_cache( $post = null ) {
 
         $post = get_post( $post );
 
@@ -1658,10 +1579,10 @@ final class Cache_Enabler {
      * @since   1.8.0
      * @change  1.8.0
      *
-     * @param   WP_Post|int|string  $post  post instance or post ID, maybe defaults to current post if empty
+     * @param   WP_Post|int|string  $post  (optional) post instance or post ID, maybe defaults to current post if empty
      */
 
-    public static function clear_post_pagination_cache( $post ) {
+    public static function clear_post_pagination_cache( $post = null ) {
 
         $post = get_post( $post );
 
