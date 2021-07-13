@@ -2339,28 +2339,29 @@ final class Cache_Enabler {
                                 <p class="subheading"><?php esc_html_e( 'Clearing', 'cache-enabler' ); ?></p>
                                 <label for="cache_enabler_clear_site_cache_on_saved_post">
                                     <input name="cache_enabler[clear_site_cache_on_saved_post]" type="checkbox" id="cache_enabler_clear_site_cache_on_saved_post" value="1" <?php checked( '1', Cache_Enabler_Engine::$settings['clear_site_cache_on_saved_post'] ); ?> />
-                                    <?php esc_html_e( 'Clear the site cache if any post type has been published, updated, or trashed (instead of only the page and/or associated cache).', 'cache-enabler' ); ?>
+                                    <!-- or "instead of all related pages" -->
+                                    <?php esc_html_e( 'Clear the site cache if any post type has been published, updated, or trashed (instead of the post cache).', 'cache-enabler' ); ?>
                                 </label>
 
                                 <br />
 
                                 <label for="cache_enabler_clear_site_cache_on_saved_comment">
                                     <input name="cache_enabler[clear_site_cache_on_saved_comment]" type="checkbox" id="cache_enabler_clear_site_cache_on_saved_comment" value="1" <?php checked( '1', Cache_Enabler_Engine::$settings['clear_site_cache_on_saved_comment'] ); ?> />
-                                    <?php esc_html_e( 'Clear the site cache if a comment has been posted, updated, spammed, or trashed (instead of only the page cache).', 'cache-enabler' ); ?>
+                                    <?php esc_html_e( 'Clear the site cache if a comment has been posted, updated, spammed, or trashed (instead of the comment cache).', 'cache-enabler' ); ?>
                                 </label>
 
                                 <br />
 
                                 <label for="cache_enabler_clear_site_cache_on_saved_term">
                                     <input name="cache_enabler[clear_site_cache_on_saved_term]" type="checkbox" id="cache_enabler_clear_site_cache_on_saved_term" value="1" <?php checked( '1', Cache_Enabler_Engine::$settings['clear_site_cache_on_saved_term'] ); ?> />
-                                    <?php esc_html_e( 'Clear the site cache if a category, tag, or custom taxonomy term has been added, updated, or deleted (instead of only the archive and/or associated cache).', 'cache-enabler' ); ?>
+                                    <?php esc_html_e( 'Clear the site cache if a category, tag, or custom taxonomy term has been added, updated, or deleted (instead of the term cache).', 'cache-enabler' ); ?>
                                 </label>
 
                                 <br />
 
                                 <label for="cache_enabler_clear_site_cache_on_saved_user">
                                     <input name="cache_enabler[clear_site_cache_on_saved_user]" type="checkbox" id="cache_enabler_clear_site_cache_on_saved_user" value="1" <?php checked( '1', Cache_Enabler_Engine::$settings['clear_site_cache_on_saved_user'] ); ?> />
-                                    <?php esc_html_e( 'Clear the site cache if a user has been added, updated, or deleted (instead of only the archive and/or associated cache).', 'cache-enabler' ); ?>
+                                    <?php esc_html_e( 'Clear the site cache if a user has been added, updated, or deleted (instead of the user cache).', 'cache-enabler' ); ?>
                                 </label>
 
                                 <br />
