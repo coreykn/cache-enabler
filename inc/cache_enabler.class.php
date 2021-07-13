@@ -2339,7 +2339,6 @@ final class Cache_Enabler {
                                 <p class="subheading"><?php esc_html_e( 'Clearing', 'cache-enabler' ); ?></p>
                                 <label for="cache_enabler_clear_site_cache_on_saved_post">
                                     <input name="cache_enabler[clear_site_cache_on_saved_post]" type="checkbox" id="cache_enabler_clear_site_cache_on_saved_post" value="1" <?php checked( '1', Cache_Enabler_Engine::$settings['clear_site_cache_on_saved_post'] ); ?> />
-                                    <!-- or "instead of all related pages" -->
                                     <?php esc_html_e( 'Clear the site cache if any post type has been published, updated, or trashed (instead of the post cache).', 'cache-enabler' ); ?>
                                 </label>
 
